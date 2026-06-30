@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>A Square Premium Bill Maker</title>
+
+<link rel="stylesheet" href="style.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script defer src="script.js"></script>
+
+</head>
+
+<body>
+
+<div class="background"></div>
+
+<header>
+
+<div class="logoBox">
+
+<h1>A Square</h1>
+
+<p>Premium Billing System</p>
+
+</div>
+
+<div class="headerButtons">
+
+<button id="dashboardBtn">Dashboard</button>
+
+<button id="historyBtn">Invoices</button>
+
+<button id="customerBtn">Customers</button>
+
+<button id="inventoryBtn">Inventory</button>
+
+<button id="adminBtn">
+Admin
+</button>
+
+</div>
+
+</header>
+
+<main>
+
+<section class="dashboard">
+
+<div class="card">
+
+<h2>Today's Sales</h2>
+
+<h1 id="todaySales">₹0</h1>
+
+</div>
+
+<div class="card">
+
+<h2>Total Orders</h2>
+
+<h1 id="totalOrders">0</h1>
+
+</div>
+
+<div class="card">
+
+<h2>Products</h2>
+
+<h1 id="productCount">5</h1>
+
+</div>
+
+<div class="card">
+
+<h2>Low Stock</h2>
+
+<h1 id="lowStock">0</h1>
+
+</div>
+
+</section>
+
+<section class="customerCard">
+
+<h2>Customer Details</h2>
+
+<div class="grid">
+
+<input
+type="text"
+id="customerName"
+placeholder="Customer Name">
+
+<input
+type="tel"
+id="customerPhone"
+placeholder="Phone Number">
+
+<input
+type="email"
+id="customerEmail"
+placeholder="Email Address">
+
+</div>
+
+</section>
+
+<section class="billingCard">
+
+<div class="titleRow">
+
+<h2>Create Bill</h2>
+
+<button id="addItem">
+
++ Add Product
+
+</button>
+
+</div>
+
+<div id="billItems">
+
+<div class="billRow">
+
+<select class="product">
+
+<option>Select Product</option>
+
+<option>Classic Peanut Butter</option>
+
+<option>Classic Crunchy Peanut Butter</option>
+
+<option>Chocolate Peanut Butter</option>
+
+<option>Crunchy Chocolate Peanut Butter</option>
+
+<option>High Protein Cookie</option>
+
+</select>
+
+<select class="variant">
+
+<option>Select Size</option>
+
+<option>100g</option>
+
+<option>250g</option>
+
+<option>500g</option>
+
+<option>1kg</option>
+
+</select>
+
+<input
+type="number"
+class="qty"
+placeholder="Qty"
+value="1"
+min="1">
+
+<input
+type="number"
+class="price"
+placeholder="Price"
+readonly>
+
+<input
+type="number"
+class="total"
+placeholder="Total"
+readonly>
+
+<button class="deleteItem">
+
+🗑
+
+</button>
+
+</div>
+
+</div>
+
+</section>
+<!-- BILL SUMMARY SECTION -->
+<section class="summaryCard">
+
+<h2>Bill Summary</h2>
+
+<div class="summaryGrid">
+
+<div>
+<label>Subtotal</label>
+<input type="number" id="subtotal" readonly value="0">
+</div>
+
+<div>
+<label>Discount (₹ / %)</label>
+<input type="text" id="discount" placeholder="e.g. 10% or 50">
+</div>
+
+<div>
+<label>Delivery Charge</label>
+<input type="number" id="delivery" value="0">
+</div>
+
+<div>
+<label>Grand Total</label>
+<input type="number" id="grandTotal" readonly value="0">
+</div>
+
+</div>
+
+</section>
+
+<!-- PAYMENT SECTION -->
+<section class="paymentCard">
+
+<h2>Payment</h2>
+
+<div class="paymentGrid">
+
+<select id="paymentMethod">
+<option value="Cash">Cash</option>
+<option value="UPI">UPI</option>
+<option value="Card">Card</option>
+<option value="Bank">Bank Transfer</option>
+</select>
+
+<select id="paymentStatus">
+<option value="Pending">Pending</option>
+<option value="Paid">Paid</option>
+<option value="Partial">Partial</option>
+</select>
+
+</div>
+
+</section>
+
+<!-- ACTION BUTTONS -->
+<section class="actionCard">
+
+<button id="generateBill" class="primaryBtn">Generate Invoice PDF</button>
+
+<button id="printBill">Print</button>
+
+<button id="saveBill">Save Bill</button>
+
+</section>
+
+<!-- INVOICE PREVIEW -->
+<section class="invoicePreview">
+
+<h2>A Square Invoice Preview</h2>
+
+<div id="previewBox">
+
+<p>Invoice will appear here...</p>
+
+</div>
+
+</section>
+
+<!-- ADMIN LOGIN MODAL -->
+<div id="adminModal" class="modal">
+
+<div class="modalBox">
+
+<h2>Admin Login</h2>
+
+<input type="password" id="adminPass" placeholder="Enter Password">
+
+<button id="loginAdmin">Unlock</button>
+
+<p id="errorMsg"></p>
+
+</div>
+
+</div>
+
+</main>
+
+<footer>
+
+<p>© 2026 A Square | Premium Billing System</p>
+
+</footer>
+
+</body>
+</html>
