@@ -1,8 +1,8 @@
 // =====================
-// A SQUARE BILL MAKER
+// A SQUARE PREMIUM BILL SYSTEM (UPGRADED)
 // =====================
 
-// PRODUCTS DATABASE (with stock system)
+// PRODUCTS DATABASE
 let products = {
 "Classic Peanut Butter": {
 100: { price: 70, stock: 100 },
@@ -29,13 +29,11 @@ let products = {
 1000: { price: 550, stock: 100 }
 },
 "High Protein Cookie": {
-40: { price: 40, stock: 200 }
+"unit": { price: 40, stock: 200 }
 }
 };
 
-// =====================
 // ADMIN PASSWORD
-// =====================
 const ADMIN_PASS = "Avrtheking";
 let adminUnlocked = false;
 
@@ -43,14 +41,14 @@ let adminUnlocked = false;
 // INIT
 // =====================
 document.addEventListener("DOMContentLoaded", () => {
-setupFirstRow();
-updateDashboard();
+attachRowEvents();
+calculateAll();
 });
 
 // =====================
-// SET PRICE AUTOMATICALLY
+// ATTACH EVENTS TO ROWS
 // =====================
-function setupFirstRow() {
+function attachRowEvents() {
 document.querySelectorAll(".billRow").forEach(row => {
 
 let product = row.querySelector(".product");
@@ -59,159 +57,187 @@ let qty = row.querySelector(".qty");
 let price = row.querySelector(".price");
 let total = row.querySelector(".total");
 
-function calculate() {
+function updateRow() {
 let p = product.value;
 let v = variant.value;
+let q = Number(qty.value || 1);
 
-if(products[p] && products[p][v]){
+// COOKIE FIX (no variant system)
+if (p === "High Protein Cookie") {
+price.value = products[p].unit.price;
+total.value = q * price.value;
+calculateAll();
+return;
+}
+
+// NORMAL PRODUCTS
+if (products[p] && products[p][v]) {
 price.value = products[p][v].price;
-total.value = price.value * qty.value;
-calculateGrandTotal();
-}
+total.value = q * price.value;
 }
 
-product.onchange = calculate;
-variant.onchange = calculate;
-qty.oninput = calculate;
+calculateAll();
+}
+
+product.onchange = updateRow;
+variant.onchange = updateRow;
+qty.oninput = updateRow;
 });
 }
 
 // =====================
-// GRAND TOTAL CALCULATION
+// ADD ROW
 // =====================
-function calculateGrandTotal(){
+document.getElementById("addItem").addEventListener("click", () => {
+let row = document.querySelector(".billRow").cloneNode(true);
+row.querySelectorAll("input").forEach(i => i.value = "");
+document.getElementById("billItems").appendChild(row);
+attachRowEvents();
+});
+
+// =====================
+// CALCULATE EVERYTHING
+// =====================
+function calculateAll() {
 
 let subtotal = 0;
 
-document.querySelectorAll(".billRow").forEach(row=>{
-let total = row.querySelector(".total").value || 0;
-subtotal += Number(total);
+document.querySelectorAll(".billRow").forEach(row => {
+let t = Number(row.querySelector(".total").value || 0);
+subtotal += t;
 });
 
 document.getElementById("subtotal").value = subtotal;
 
-let discount = document.getElementById("discount").value;
+// discount
+let discountInput = document.getElementById("discount").value;
 let delivery = Number(document.getElementById("delivery").value || 0);
 
 let final = subtotal;
 
-// discount logic
-if(discount.includes("%")){
-let percent = parseFloat(discount);
-final -= (subtotal * percent / 100);
-}else if(discount){
-final -= Number(discount);
+if (discountInput.includes("%")) {
+let p = parseFloat(discountInput) || 0;
+final -= (subtotal * p / 100);
+} else {
+final -= Number(discountInput || 0);
 }
 
 final += delivery;
 
-document.getElementById("grandTotal").value = final;
-
+document.getElementById("grandTotal").value = final.toFixed(2);
 }
 
 // =====================
-// ADD NEW PRODUCT ROW
+// SAVE BILL + STOCK
 // =====================
-document.getElementById("addItem").addEventListener("click", ()=>{
+document.getElementById("saveBill").onclick = () => {
 
-let newRow = document.querySelector(".billRow").cloneNode(true);
-document.getElementById("billItems").appendChild(newRow);
-setupFirstRow();
+document.querySelectorAll(".billRow").forEach(row => {
+
+let p = row.querySelector(".product").value;
+let v = row.querySelector(".variant").value;
+let q = Number(row.querySelector(".qty").value || 0);
+
+// COOKIE FIX
+if (p === "High Protein Cookie") {
+products[p].unit.stock -= q;
+return;
+}
+
+if (products[p] && products[p][v]) {
+products[p][v].stock -= q;
+}
+
 });
 
+alert("Bill Saved & Stock Updated ✔");
+};
+
 // =====================
-// ADMIN LOGIN
+// ADMIN PANEL
 // =====================
-document.getElementById("adminBtn").onclick = ()=>{
+document.getElementById("adminBtn").onclick = () => {
 document.getElementById("adminModal").style.display = "flex";
 };
 
-document.getElementById("loginAdmin").onclick = ()=>{
+document.getElementById("loginAdmin").onclick = () => {
 let pass = document.getElementById("adminPass").value;
 
-if(pass === ADMIN_PASS){
+if (pass === ADMIN_PASS) {
 adminUnlocked = true;
-alert("Admin Unlocked");
+alert("Admin Unlocked ✔");
 document.getElementById("adminModal").style.display = "none";
-}else{
+} else {
 document.getElementById("errorMsg").innerText = "Wrong Password!";
 }
 };
 
 // =====================
-// STOCK DEDUCTION (ON SAVE)
+// BEAUTIFUL COLORFUL PDF
 // =====================
-document.getElementById("saveBill").onclick = ()=>{
-
-document.querySelectorAll(".billRow").forEach(row=>{
-let p = row.querySelector(".product").value;
-let v = row.querySelector(".variant").value;
-let q = Number(row.querySelector(".qty").value);
-
-if(products[p] && products[p][v]){
-products[p][v].stock -= q;
-}
-});
-
-alert("Bill Saved & Stock Updated");
-updateDashboard();
-};
-
-// =====================
-// DASHBOARD UPDATE
-// =====================
-function updateDashboard(){
-
-let totalProducts = Object.keys(products).length;
-let lowStock = 0;
-
-for(let p in products){
-for(let v in products[p]){
-if(products[p][v].stock < 20){
-lowStock++;
-}
-}
-}
-
-document.getElementById("productCount").innerText = totalProducts;
-document.getElementById("lowStock").innerText = lowStock;
-document.getElementById("totalOrders").innerText =
-Number(document.getElementById("totalOrders").innerText) + 1;
-document.getElementById("todaySales").innerText =
-"₹" + document.getElementById("grandTotal").value;
-}
-
-// =====================
-// PDF GENERATION (SIMPLE)
-// =====================
-document.getElementById("generateBill").onclick = ()=>{
+document.getElementById("generateBill").onclick = () => {
 
 const { jsPDF } = window.jspdf;
 let doc = new jsPDF();
 
-doc.setFontSize(16);
-doc.text("A Square Invoice", 10, 10);
+// HEADER
+doc.setFillColor(212, 175, 55);
+doc.rect(0, 0, 220, 20, "F");
 
-let y = 20;
+doc.setFontSize(18);
+doc.setTextColor(0, 0, 0);
+doc.text("A SQUARE INVOICE", 60, 13);
 
-document.querySelectorAll(".billRow").forEach(row=>{
+// CUSTOMER INFO
+let name = document.getElementById("customerName").value;
+let phone = document.getElementById("customerPhone").value;
+let email = document.getElementById("customerEmail").value;
+
+doc.setFontSize(11);
+doc.setTextColor(50, 50, 50);
+doc.text(`Name: ${name}`, 10, 30);
+doc.text(`Phone: ${phone}`, 10, 37);
+doc.text(`Email: ${email}`, 10, 44);
+
+// ITEMS
+let y = 55;
+
+document.querySelectorAll(".billRow").forEach(row => {
+
 let p = row.querySelector(".product").value;
 let v = row.querySelector(".variant").value;
 let q = row.querySelector(".qty").value;
 let t = row.querySelector(".total").value;
 
-doc.text(`${p} (${v}) x${q} = ₹${t}`, 10, y);
-y += 10;
+doc.setTextColor(0, 0, 0);
+doc.text(`${p} ${v ? "(" + v + ")" : ""} x${q} = ₹${t}`, 10, y);
+
+y += 8;
 });
 
-doc.text("Grand Total: ₹" + document.getElementById("grandTotal").value, 10, y+10);
+// TOTAL BOX
+doc.setFillColor(0, 0, 0);
+doc.rect(10, y + 5, 180, 15, "F");
 
-doc.save("A-Square-Invoice.pdf");
+doc.setTextColor(255, 215, 0);
+doc.text(`GRAND TOTAL: ₹${document.getElementById("grandTotal").value}`, 15, y + 15);
+
+// FOOTER
+doc.setFontSize(10);
+doc.setTextColor(100, 100, 100);
+doc.text("Thank you for choosing A Square ❤️", 40, y + 35);
+
+doc.save("A-Square-Premium-Invoice.pdf");
 };
 
 // =====================
 // PRINT
 // =====================
-document.getElementById("printBill").onclick = ()=>{
+document.getElementById("printBill").onclick = () => {
 window.print();
 };
+
+// =====================
+// INITIAL CALC
+// =====================
+setInterval(calculateAll, 500);
